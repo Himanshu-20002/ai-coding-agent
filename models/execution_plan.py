@@ -19,17 +19,26 @@ class PlanStep:
     Represents a single atomic action within an execution plan.
 
     Attributes:
-        step_id (int): Sequential identifier for the step.
-        target_file (Path): Path of the file to modify or create.
-        action (str): Action type ('CREATE', 'MODIFY', 'DELETE').
-        description (str): Human-readable summary of what change will be made.
-        instructions (str): Detailed instructions for the LLM code generator.
+        step_id (int): Sequential identifier for the step (1-indexed).
+        title (str): Concise title for the step.
+        reason (str): Rationale for why this step is required.
+        target_files (List[Path]): List of target file paths estimated for this step.
+        expected_outcome (str): Expected result or impact of executing this step.
+        action (str): Action type ('CREATE', 'MODIFY', 'DELETE', 'REFACTOR').
+        instructions (str): Specific details/instructions for the step.
     """
     step_id: int
-    target_file: Path
-    action: str
-    description: str
-    instructions: str
+    title: str
+    reason: str
+    target_files: List[Path] = field(default_factory=list)
+    expected_outcome: str = ""
+    action: str = "MODIFY"
+    instructions: str = ""
+
+    @property
+    def target_file(self) -> Path:
+        """Backward compatibility helper for primary target file."""
+        return self.target_files[0] if self.target_files else Path("workspace")
 
 
 @dataclass
@@ -39,22 +48,44 @@ class ExecutionPlan:
 
     Attributes:
         user_prompt (str): The original task prompt provided by the user.
+        goal (str): High-level goal statement of the plan.
         summary (str): High-level overview of the plan strategy.
         steps (List[PlanStep]): List of individual steps to execute in sequence.
     """
     user_prompt: str
+    goal: str = ""
     summary: str = ""
     steps: List[PlanStep] = field(default_factory=list)
 
     def to_markdown(self) -> str:
         """
-        Formats the plan into a markdown string representation.
+        Formats the plan into a structured markdown string representation.
 
         Returns:
             str: Markdown formatted string of the plan.
-
-        TODO:
-            Implement detailed markdown formatting for saving plan artifacts.
         """
-        # Placeholder implementation
-        return f"# Execution Plan\n\nPrompt: {self.user_prompt}\n\nSteps: {len(self.steps)}"
+        lines = [
+            "# 📋 Execution Plan",
+            "",
+            f"**Goal**: {self.goal if self.goal else self.user_prompt}",
+            f"**User Request**: {self.user_prompt}",
+            "",
+            "## Overview",
+            self.summary if self.summary else "Structured step-by-step implementation plan based on repository analysis.",
+            "",
+            "## Implementation Steps",
+            ""
+        ]
+
+        for step in self.steps:
+            target_files_str = ", ".join([f"`{f}`" for f in step.target_files]) if step.target_files else "None"
+            lines.extend([
+                f"### Step {step.step_id}: {step.title}",
+                f"- **Action**: `{step.action}`",
+                f"- **Reason**: {step.reason}",
+                f"- **Target Files**: {target_files_str}",
+                f"- **Expected Outcome**: {step.expected_outcome}",
+                ""
+            ])
+
+        return "\n".join(lines)
