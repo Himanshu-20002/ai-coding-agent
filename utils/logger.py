@@ -36,23 +36,23 @@ class AgentLogger:
 
     def info(self, message: str) -> None:
         """Logs an informational message in cyan."""
-        self._console.print(f"[info]ℹ [INFO]:[/info] {message}")
+        self._console.print(f"[info][INFO]:[/info] {message}")
 
     def success(self, message: str) -> None:
         """Logs a success message in bold green."""
-        self._console.print(f"[success]✔ [SUCCESS]:[/success] {message}")
+        self._console.print(f"[success][SUCCESS]:[/success] {message}")
 
     def warning(self, message: str) -> None:
         """Logs a warning message in yellow."""
-        self._console.print(f"[warning]⚠ [WARNING]:[/warning] {message}")
+        self._console.print(f"[warning][WARNING]:[/warning] {message}")
 
     def error(self, message: str) -> None:
         """Logs an error message in bold red."""
-        self._console.print(f"[error]✖ [ERROR]:[/error] {message}")
+        self._console.print(f"[error][ERROR]:[/error] {message}")
 
     def agent(self, agent_name: str, message: str) -> None:
         """Logs an agent-specific action in magenta."""
-        self._console.print(f"[agent]🤖 [{agent_name}]:[/agent] {message}")
+        self._console.print(f"[agent][{agent_name}]:[/agent] {message}")
 
 
 # Global logger instance
